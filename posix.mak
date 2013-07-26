@@ -194,7 +194,7 @@ STD_PACKAGES = $(addprefix std/, algorithm container experimental/logger \
 
 # Modules in std (including those in packages), in alphabetical order.
 STD_MODULES = $(addprefix std/, \
-  array ascii base64 bigint bitmanip compiler complex concurrency \
+  allocator array ascii base64 bigint bitmanip compiler complex concurrency \
   $(addprefix container/, array binaryheap dlist rbtree slist util) \
   conv cstream csv datetime demangle \
   $(addprefix digest/, digest crc md ripemd sha) \
