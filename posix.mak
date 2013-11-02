@@ -175,6 +175,7 @@ LINKCURL:=$(if $(LIBCURL_STUB),-L$(LIBCURL_STUB),-L-lcurl)
 MAIN = $(ROOT)/emptymain.d
 
 # Stuff in std/
+
 STD_MODULES = $(addprefix std/, algorithm allocator array ascii base64 bigint \
         bitmanip compiler complex concurrency container conv		\
         cstream csv datetime demangle encoding exception	\
