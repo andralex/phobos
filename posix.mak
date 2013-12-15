@@ -261,17 +261,11 @@ unittest : $(addsuffix .d,$(addprefix unittest/,$(D_MODULES)))
 
 depend: $(addprefix $(ROOT)/unittest/,$(addsuffix .deps,$(D_MODULES)))
 
-include $(addprefix $(ROOT)/unittest/,$(addsuffix .deps,$(D_MODULES)))
+-include $(addprefix $(ROOT)/unittest/,$(addsuffix .deps,$(D_MODULES)))
 
 ################################################################################
 # Patterns begin here
 ################################################################################
-
-$(ROOT)/unittest/%.deps:
-	@mkdir -p $(dir $@)
-	echo $(ROOT)/unittest/$*.o: \
-		`$(DMD) $(DFLAGS) -v -c -o- $*.d | grep '^import ' | \
-	    sed 's/.*(\(.*\))/\1/'` >$@
 
 $(ROOT)/%$(DOTOBJ) : %.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@) || [ -d $(dir $@) ]
@@ -307,7 +301,9 @@ $(addprefix $(ROOT)/unittest/,$(DISABLED_TESTS)) :
 
 UT_D_OBJS:=$(addprefix $(ROOT)/unittest/,$(addsuffix .o,$(D_MODULES)))
 $(UT_D_OBJS): $(ROOT)/unittest/%.o: %.d
-	$(DMD) $(DFLAGS) -unittest -c -of$@ $*.d
+	@mkdir -p $(dir $@)
+	$(DMD) $(DFLAGS) -unittest -c -of$@ -deps=$(@:.o=.deps.tmp) $<
+	@echo $@: `sed 's|.*(\(.*\)).*|\1|' $(@:.o=.deps.tmp) | sort | uniq` >$(@:.o=.deps)
 
 ifneq (linux,$(OS))
 
