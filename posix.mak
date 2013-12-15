@@ -237,7 +237,7 @@ OBJS = $(addsuffix $(DOTOBJ),$(addprefix $(ROOT)/,$(C_MODULES)))
 
 MAKEFILE = $(firstword $(MAKEFILE_LIST))
 
-SUBMAKE = $(MAKE) --no-print-directory OS=$(OS) -f $(MAKEFILE)
+SUBMAKE = $(MAKE) --no-print-directory -f $(MAKEFILE)
 
 ################################################################################
 # Rules begin here
@@ -258,8 +258,7 @@ release :
 	$(SUBMAKE) BUILD=release
 
 install :
-	$(SUBMAKE) MODEL=$(MODEL) BUILD=release INSTALL_DIR=$(INSTALL_DIR) \
-		DMD=$(DMD) install2
+	$(SUBMAKE) BUILD=release install2
 
 unittest : $(addsuffix .d,$(addprefix unittest/,$(D_MODULES)))
 
