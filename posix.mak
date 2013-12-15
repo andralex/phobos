@@ -251,6 +251,12 @@ else
 all: $(LIB)
 endif
 
+debug :
+	$(SUBMAKE) BUILD=debug
+
+release :
+	$(SUBMAKE) BUILD=release
+
 install :
 	$(SUBMAKE) MODEL=$(MODEL) BUILD=release INSTALL_DIR=$(INSTALL_DIR) \
 		DMD=$(DMD) install2
