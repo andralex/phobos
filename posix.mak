@@ -245,18 +245,16 @@ SUBMAKE = $(MAKE) --no-print-directory OS=$(OS) -f $(MAKEFILE)
 
 # Main target (builds the dll on linux, too)
 ifeq (linux,$(OS))
-all : $(BUILD) $(BUILD)_pic
-$(BUILD)_pic :
-	$(SUBMAKE) MODEL=$(MODEL) BUILD=$(BUILD) PIC=1 dll
+# The dll target comes first so that objects shared between dll and $(LIB) are build with PIC.
+all : dll $(LIB)
 else
-all : $(BUILD)
+all : $(LIB)
 endif
 
 install :
 	$(SUBMAKE) MODEL=$(MODEL) BUILD=release INSTALL_DIR=$(INSTALL_DIR) \
 		DMD=$(DMD) install2
 
-$(BUILD) : $(LIB)
 unittest : $(addsuffix .d,$(addprefix unittest/,$(D_MODULES)))
 
 depend: $(addprefix $(ROOT)/unittest/,$(addsuffix .deps,$(D_MODULES)))
@@ -273,6 +271,9 @@ $(ROOT)/%$(DOTOBJ) : %.c
 
 $(LIB) : $(OBJS) $(ALL_D_FILES) $(DRUNTIME)
 	$(DMD) $(DFLAGS) -lib -of$@ $(DRUNTIME) $(D_FILES) $(OBJS)
+
+# force PIC for shared library targets
+$(ROOT)/libphobos2.so $(ROOT)/$(SONAME) $(LIBSO) dll: override PIC:=-fPIC
 
 dll : $(ROOT)/libphobos2.so
 
@@ -342,7 +343,7 @@ clean :
 zip :
 	zip $(ZIPFILE) $(MAKEFILE) $(ALL_D_FILES) $(ALL_C_FILES) win32.mak win64.mak
 
-install2 : release
+install2 : all
 	mkdir -p $(INSTALL_DIR)/lib
 	cp $(LIB) $(INSTALL_DIR)/lib/
 ifneq (,$(findstring $(OS),linux))
