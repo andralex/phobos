@@ -4400,7 +4400,7 @@ class CAllocatorImpl(Allocator) : CAllocator
     else alias impl = Allocator.it;
 
     /// Returns $(D impl.alignment).
-    @property uint alignment()
+    override @property uint alignment()
     {
         return impl.alignment;
     }
@@ -4409,7 +4409,7 @@ class CAllocatorImpl(Allocator) : CAllocator
     If $(D Allocator) supports alignment setting, performs it and returns $(D
     true). Otherwise, returns $(D false).
     */
-    @property bool alignment(uint a)
+    override @property bool alignment(uint a)
     {
         static if (is(typeof(impl.alignment = a)))
         {
@@ -4425,7 +4425,7 @@ class CAllocatorImpl(Allocator) : CAllocator
     /**
     Returns $(D impl.goodAllocSize(s)).
     */
-    size_t goodAllocSize(size_t s)
+    override size_t goodAllocSize(size_t s)
     {
         return impl.goodAllocSize(s);
     }
@@ -4433,7 +4433,7 @@ class CAllocatorImpl(Allocator) : CAllocator
     /**
     Returns $(D impl.allocate(s)).
     */
-    void[] allocate(size_t s)
+    override void[] allocate(size_t s)
     {
         return impl.allocate(s);
     }
@@ -4441,7 +4441,7 @@ class CAllocatorImpl(Allocator) : CAllocator
     /**
     Returns $(D true) if $(D Allocator) supports $(D owns).
     */
-    bool supportsOwns()
+    override bool supportsOwns()
     {
         return hasMember!(Allocator, "owns");
     }
@@ -4451,13 +4451,13 @@ class CAllocatorImpl(Allocator) : CAllocator
     returns $(D impl.owns(b)).
     */
     static if (hasMember!(Allocator, "owns"))
-    bool owns(void[] b)
+    override bool owns(void[] b)
     {
         return impl.owns(b);
     }
 
     /// Returns $(D impl.expand(b, s)) if defined, $(D false) otherwise.
-    bool expand(ref void[] b, size_t s)
+    override bool expand(ref void[] b, size_t s)
     {
         static if (hasMember!(Allocator, "expand"))
             return impl.expand(b, s);
@@ -4466,14 +4466,14 @@ class CAllocatorImpl(Allocator) : CAllocator
     }
 
     /// Returns $(D impl.reallocate(b, s)).
-    bool reallocate(ref void[] b, size_t s)
+    override bool reallocate(ref void[] b, size_t s)
     {
         return impl.reallocate(b, s);
     }
 
     /// Calls $(D impl.deallocate(b)) and returns $(D true) if defined,
     /// otherwise returns $(D false).
-    bool deallocate(void[] b)
+    override bool deallocate(void[] b)
     {
         static if (hasMember!(Allocator, "deallocate"))
         {
@@ -4488,7 +4488,7 @@ class CAllocatorImpl(Allocator) : CAllocator
 
     /// Calls $(D impl.deallocateAll()) and returns $(D true) if defined,
     /// otherwise returns $(D false).
-    bool deallocateAll()
+    override bool deallocateAll()
     {
         static if (hasMember!(Allocator, "deallocateAll"))
         {
@@ -4503,7 +4503,7 @@ class CAllocatorImpl(Allocator) : CAllocator
 
     /// Returns $(D true) if allocator supports $(D allocateAll). By default
     /// returns $(D false).
-    bool supportsAllocateAll()
+    override bool supportsAllocateAll()
     {
         return hasMember!(Allocator, "allocateAll");
     }
@@ -4512,8 +4512,8 @@ class CAllocatorImpl(Allocator) : CAllocator
     Overridden only if $(D Allocator) implements $(D allocateAll). In that case,
     returns $(D impl.allocateAll()).
     */
-    static if (hasMember!(Allocator, "deallocateAll"))
-    void[] allocateAll()
+    static if (hasMember!(Allocator, "allocateAll"))
+    override void[] allocateAll()
     {
         return impl.allocateAll();
     }
