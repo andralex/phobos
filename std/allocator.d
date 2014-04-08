@@ -423,6 +423,100 @@ unittest
 }
 
 /**
+ * Shortcut that encapsulates a cast and a call to emplace()
+ * Params:
+ * a = the allocator to use
+ * args = the arguments to $(D T)'s constructor
+ * Returns: a pointer to an instance of $(D T).
+ */
+T* allocate(T, Allocator, Args...)(auto ref Allocator a, auto ref Args args)
+    pure nothrow @trusted if (is (T == struct))
+{
+    import std.conv : emplace;
+    void[] mem = a.allocate(T.sizeof);
+    return emplace(cast(T*) mem.ptr, args);
+}
+
+///
+unittest
+{
+    stderr.writeln("emsid.memory.allocators.allocate (struct) unittest started");
+    auto allocator = Mallocator.it;
+    struct TestStruct { int x = 5; }
+    TestStruct* p = allocate!TestStruct(allocator);
+    assert (p !is null);
+    assert (p.x == 5);
+    Mallocator.it.deallocate((cast(void*) p)[0 .. TestStruct.sizeof]);
+    stderr.writeln("emsid.memory.allocators.allocate (struct) unittest passed");
+}
+
+/**
+ * Shortcut that encapsulates a cast and a call to emplace()
+ * Params:
+ * a = the allocator to use
+ * args = the arguments to $(D T)'s constructor
+ * Returns: a reference to an instance of $(D T).
+ */
+T allocate(T, Allocator, Args...)(auto ref Allocator a, auto ref Args args)
+    @trusted if (is (T == class))
+{
+    import std.conv : emplace;
+    void[] mem = a.allocate(__traits(classInstanceSize, T));
+    return emplace!T(mem, args);
+}
+
+///
+unittest
+{
+    auto allocator = Mallocator.it;
+    class TestClass { int x; this(int x) { this.x = x; } }
+    TestClass tc = allocate!TestClass(allocator, 10);
+    assert (tc !is null);
+    assert (tc.x == 10);
+    Mallocator.it.deallocate((cast(void*) tc)[0 .. __traits(classInstanceSize, TestClass)]);
+}
+
+/**
+ * Encapsulates some casts and pointer slicing to deallocate $(D structInstance).
+ * This function does NOT call T's destructor.
+ */
+void deallocate(T, Allocator)(auto ref Allocator a, T* structInstance)
+    pure nothrow @trusted if (is (T == struct))
+{
+    a.deallocate((cast(void*) structInstance)[0 .. T.sizeof]);
+}
+
+///
+unittest
+{
+    auto allocator = Mallocator.it;
+    bool d = false;
+    struct TestStruct { float f; }
+    TestStruct* ts = allocate!TestStruct(allocator);
+    deallocate(allocator, ts);
+}
+
+/**
+ * Encapsulates some casts and pointer slicing to deallocate $(D classInstance).
+ * This function does NOT call T's destructor.
+ */
+void deallocate(T, Allocator)(auto ref Allocator a, T classInstance)
+    pure nothrow @trusted if (is (T == class))
+{
+    a.deallocate((cast(void*) classInstance)[0 .. __traits(classInstanceSize, T)]);
+}
+
+///
+unittest
+{
+    auto allocator = Mallocator.it;
+    class TestClass { double z; }
+    TestClass tc = allocate!TestClass(allocator);
+    assert (tc.z == double.nan);
+    deallocate(allocator, tc);
+}
+
+/**
 $(D chooseAtRuntime) is a compile-time constant of type $(D size_t) that several
 parameterized structures in this module recognize to mean deferral to runtime of
 the exact value. For example, $(D HeapBlock!(Allocator, 4096)) (described in
@@ -529,10 +623,10 @@ struct NullAllocator
     */
     void deallocateAll() shared { }
 
-	static shared(NullAllocator) it() pure nothrow @property @trusted
-	{
-		return cast(typeof(return)) _it;
-	}
+    static shared(NullAllocator) it() pure nothrow @property @trusted
+    {
+        return cast(typeof(return)) _it;
+    }
 
     /**
     Returns the $(D shared) global instance of the $(D NullAllocator).
@@ -611,10 +705,10 @@ struct GCAllocator
         GC.free(b.ptr);
     }
 
-	static shared(GCAllocator) it() pure nothrow @property @trusted
-	{
-		return cast(typeof(return)) _it;
-	}
+    static shared(GCAllocator) it() pure nothrow @property @trusted
+    {
+        return cast(typeof(return)) _it;
+    }
 
     /**
     Returns the global instance of this allocator type. The garbage collected allocator is thread-safe, therefore all of its methods and $(D it) itself are $(D shared).
@@ -644,9 +738,9 @@ unittest
 
 private extern (C)
 {
-	void* malloc(size_t) pure nothrow @trusted;
-	void free(void*) pure nothrow @trusted;
-	void* realloc(void*, size_t) pure nothrow @trusted;
+    void* malloc(size_t) pure nothrow @trusted;
+    void free(void*) pure nothrow @trusted;
+    void* realloc(void*, size_t) pure nothrow @trusted;
 }
 
 /**
@@ -2981,11 +3075,11 @@ struct InSituRegion(size_t size, size_t minAlign = platformAlignment)
     function returns an empty non-null slice.
     */
     void[] allocate(size_t bytes) pure nothrow @trusted
-	out (result)
-	{
-		assert (result is null || owns(result));
-	}
-	body
+    out (result)
+    {
+        assert (result is null || owns(result));
+    }
+    body
     {
         // Oddity: we don't return null for null allocation. Instead, we return
         // an empty slice with a non-null ptr.
