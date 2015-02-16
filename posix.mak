@@ -174,7 +174,7 @@ PACKAGE_std_algorithm = comparison iteration mutation package searching setops \
 PACKAGE_std_container = array binaryheap dlist package rbtree slist util
 PACKAGE_std_digest = crc digest md ripemd sha
 PACKAGE_std_experimental = $(addprefix logger/, core filelogger \
-  nulllogger multilogger package)
+  nulllogger multilogger package) $(addprefix allocator/,common)
 PACKAGE_std_net = curl isemail
 PACKAGE_std_range = interfaces package primitives
 PACKAGE_std_regex = package $(addprefix internal/,generator ir parser \
