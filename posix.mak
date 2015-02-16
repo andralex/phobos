@@ -189,12 +189,13 @@ MAIN = $(ROOT)/emptymain.d
 
 # Packages in std. Just mention the package name here and the actual files in
 # the package in STD_MODULES.
-STD_PACKAGES = $(addprefix std/, algorithm container experimental/logger \
-	range regex)
+STD_PACKAGES = $(addprefix std/, algorithm container experimental/allocator \
+	experimental/logger range regex)
 
 # Modules in std (including those in packages), in alphabetical order.
 STD_MODULES = $(addprefix std/, \
-  allocator array ascii base64 bigint bitmanip compiler complex concurrency \
+  $(addprefix experimental/allocator/, common) \
+  array ascii base64 bigint bitmanip compiler complex concurrency \
   $(addprefix container/, array binaryheap dlist rbtree slist util) \
   conv cstream csv datetime demangle \
   $(addprefix digest/, digest crc md ripemd sha) \
