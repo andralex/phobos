@@ -1485,7 +1485,7 @@ private struct BitVector
 
     void opSliceAssign(bool b) { _rep[] = b ? ulong.max : 0; }
 
-    void opSliceAssign(bool b, ulong x, ulong y)
+	void opSliceAssign(bool b, size_t x, size_t y)
     {
         assert(x <= y && y <= _rep.length * 64);
         if (x == y) return;
@@ -1514,20 +1514,20 @@ private struct BitVector
         }
     }
 
-    bool opIndex(ulong x)
+	bool opIndex(size_t x)
     {
         assert(x < length);
         return (_rep[x / 64] & (0x8000_0000_0000_0000UL >> (x % 64))) != 0;
     }
 
-    void opIndexAssign(bool b, ulong x)
+	void opIndexAssign(bool b, size_t x)
     {
         auto i = x / 64, j = 0x8000_0000_0000_0000UL >> (x % 64);
         if (b) _rep[i] |= j;
         else _rep[i] &= ~j;
     }
 
-    ulong length() const
+    size_t length() const
     {
         return _rep.length * 64;
     }
@@ -1535,7 +1535,7 @@ private struct BitVector
     /* Returns the index of the first 1 to the right of i (including i itself),
     or length if not found.
     */
-    ulong find1(ulong i)
+	size_t find1(size_t i)
     {
         assert(i < length);
         auto w = i / 64;
@@ -1561,7 +1561,7 @@ private struct BitVector
     /* Returns the index of the first 1 to the left of i (including i itself),
     or ulong.max if not found.
     */
-    ulong find1Backward(ulong i)
+	size_t find1Backward(size_t i)
     {
         assert(i < length);
         auto w = i / 64;
@@ -1582,7 +1582,7 @@ private struct BitVector
             if (auto currentWord = _rep[w])
                 return w * 64 + (63 - currentWord.trailingZeros);
         }
-        return ulong.max;
+		return size_t.max;
     }
 
     /// Are all bits zero?
@@ -1599,7 +1599,7 @@ private struct BitVector
         return true;
     }
 
-    ulong findZeros(immutable size_t howMany, ulong start)
+	size_t findZeros(immutable size_t howMany, size_t start)
     {
         assert(start < length);
         assert(howMany > 64);
@@ -1607,7 +1607,7 @@ private struct BitVector
         while (_rep[i] & 1)
         {
             // No trailing zeros in this word, try the next one
-            if (++i == _rep.length) return ulong.max;
+			if (++i == _rep.length) return size_t.max;
             start = i * 64;
         }
         // Adjust start to have only trailing zeros after it
@@ -1623,13 +1623,13 @@ private struct BitVector
         auto needed = howMany - prefixLength;
         for (++i; needed >= 64; needed -= 64, ++i)
         {
-            if (i >= _rep.length) return ulong.max;
+			if (i >= _rep.length) return size_t.max;
             if (_rep[i] != 0) return findZeros(howMany, i * 64);
         }
         // Leftover < 64 bits
         assert(needed < 64);
         if (!needed) return start;
-        if (i >= _rep.length) return ulong.max;
+		if (i >= _rep.length) return size_t.max;
         if (leadingOnes(~_rep[i]) >= needed) return start;
         return findZeros(howMany, i * 64);
     }
@@ -1660,9 +1660,9 @@ unittest
     assert(v.rep[2] == 0);
 
     v[] = 0;
-    assert(v.find1Backward(0) == ulong.max);
-    assert(v.find1Backward(43) == ulong.max);
-    assert(v.find1Backward(83) == ulong.max);
+	assert(v.find1Backward(0) == size_t.max);
+	assert(v.find1Backward(43) == size_t.max);
+	assert(v.find1Backward(83) == size_t.max);
 
     v[0] = 1;
     assert(v.find1Backward(0) == 0);
@@ -1671,10 +1671,10 @@ unittest
 
     v[0] = 0;
     v[101] = 1;
-    assert(v.find1Backward(0) == ulong.max);
-    assert(v.find1Backward(43) == ulong.max);
-    assert(v.find1Backward(83) == ulong.max);
-    assert(v.find1Backward(100) == ulong.max);
+	assert(v.find1Backward(0) == size_t.max);
+	assert(v.find1Backward(43) == size_t.max);
+	assert(v.find1Backward(83) == size_t.max);
+	assert(v.find1Backward(100) == size_t.max);
     assert(v.find1Backward(101) == 101);
     assert(v.find1Backward(553) == 101);
 
@@ -1699,8 +1699,8 @@ unittest
     assert(v.findZeros(99, 540) == 540);
     assert(v.findZeros(540, 100) == 100);
     assert(v.findZeros(640, 0) == 0);
-    assert(v.findZeros(641, 1) == ulong.max);
-    assert(v.findZeros(641, 100) == ulong.max);
+	assert(v.findZeros(641, 1) == size_t.max);
+	assert(v.findZeros(641, 100) == size_t.max);
 }
 
 /**
@@ -2009,7 +2009,7 @@ struct HeapBlock(size_t theBlockSize, uint theAlignment = platformAlignment)
             return null;
         }
         auto i = _control.findZeros(blocks, _startIdx * 64);
-        if (i == ulong.max) return null;
+        if (i == size_t.max) return null;
         // Allocate those bits
         _control[i .. i + blocks] = 1;
         return _payload[i * blockSize .. (i + blocks) * blockSize];
@@ -2479,7 +2479,7 @@ struct HeapBlockWithInternalPointers(
         // if (!_heap._control[block]) return null;
         // Within an allocation, must find the 1 just to the left of it
         auto i = _allocStart.find1Backward(block);
-        if (i == ulong.max) return null;
+        if (i == size_t.max) return null;
         auto j = _allocStart.find1(i + 1);
         return _heap._payload.ptr[_heap.blockSize * i .. _heap.blockSize * j];
     }
@@ -3935,7 +3935,7 @@ private struct BasicRegion(uint minAlign = platformAlignment)
         static if (minAlign > 1)
         {
             auto newStore = cast(void*) roundUpToMultipleOf(
-                cast(ulong) store.ptr,
+                cast(size_t) store.ptr,
                 alignment);
             enforce(newStore <= store.ptr + store.length);
             _current = newStore;
@@ -3969,7 +3969,7 @@ private struct BasicRegion(uint minAlign = platformAlignment)
         if (newCurrent > _end) return null;
         auto result = _current[0 .. bytes];
         _current = newCurrent;
-        assert(cast(ulong) result.ptr % alignment == 0);
+        assert(cast(size_t) result.ptr % alignment == 0);
         return result;
     }
 
@@ -3979,7 +3979,7 @@ private struct BasicRegion(uint minAlign = platformAlignment)
         // Just bump the pointer to the next good allocation
         auto save = _current;
         _current = cast(void*) roundUpToMultipleOf(
-            cast(ulong) _current, a);
+			cast(size_t) _current, a);
         if (auto b = allocate(bytes)) return b;
         // Failed, rollback
         _current = save;
@@ -4141,7 +4141,7 @@ struct InSituRegion(size_t size, size_t minAlign = platformAlignment)
     {
         assert(!_crt);
         _crt = cast(void*) roundUpToMultipleOf(
-            cast(ulong) _store.ptr, alignment);
+			cast(size_t) _store.ptr, alignment);
         _end = _store.ptr + _store.length;
     }
 
@@ -4181,7 +4181,7 @@ struct InSituRegion(size_t size, size_t minAlign = platformAlignment)
         // Just bump the pointer to the next good allocation
         auto save = _crt;
         _crt = cast(void*) roundUpToMultipleOf(
-            cast(ulong) _crt, a);
+			cast(size_t) _crt, a);
         if (auto b = allocate(bytes)) return b;
         // Failed, rollback
         _crt = save;
@@ -4345,7 +4345,7 @@ version(Posix) struct SbrkRegion(uint minAlign = platformAlignment)
             _brkCurrent = _brkInitial;
         }
         immutable size_t delta = cast(shared void*) roundUpToMultipleOf(
-            cast(ulong) _brkCurrent, a) - _brkCurrent;
+			cast(size_t) _brkCurrent, a) - _brkCurrent;
         // Still must make sure the total size is aligned to the allocator's
         // alignment.
         immutable rounded = (bytes + delta).roundUpToMultipleOf(alignment);
