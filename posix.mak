@@ -147,9 +147,9 @@ endif
 LIBCURL_STUB:=$(if $(findstring $(OS),linux),$(ROOT)/libcurl_stub.so,)
 LINKCURL:=$(if $(LIBCURL_STUB),-L$(LIBCURL_STUB),-L-lcurl)
 
-################################################################################
 MAIN = $(ROOT)/emptymain.d
 
+<<<<<<< HEAD
 # Given one or more packages, returns their respective libraries
 P2LIB=$(addprefix $(ROOT)/libphobos2_,$(addsuffix $(DOTLIB),$(subst /,_,$1)))
 # Given one or more packages, returns the modules they contain
@@ -174,7 +174,7 @@ PACKAGE_std_algorithm = comparison iteration mutation package searching setops \
 PACKAGE_std_container = array binaryheap dlist package rbtree slist util
 PACKAGE_std_digest = crc digest md ripemd sha
 PACKAGE_std_experimental = $(addprefix logger/, core filelogger \
-  nulllogger multilogger package) $(addprefix allocator/,common)
+  nulllogger multilogger package) $(addprefix allocator/,common null_allocator)
 PACKAGE_std_net = curl isemail
 PACKAGE_std_range = interfaces package primitives
 PACKAGE_std_regex = package $(addprefix internal/,generator ir parser \
