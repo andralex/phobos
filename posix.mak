@@ -195,7 +195,7 @@ STD_PACKAGES = $(addprefix std/, algorithm container experimental/allocator \
 # Modules in std (including those in packages), in alphabetical order.
 STD_MODULES = $(addprefix std/, \
   $(addprefix experimental/allocator/, affix_allocator allocator_list common \
-	fallback_allocator free_list gc_allocator \
+	bucketizer fallback_allocator free_list gc_allocator \
 	heap_block mallocator mmap_allocator null_allocator region \
 	segregator stats_collector) \
   array ascii base64 bigint bitmanip compiler complex concurrency \
