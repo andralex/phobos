@@ -196,8 +196,8 @@ STD_PACKAGES = $(addprefix std/, algorithm container experimental/allocator \
 STD_MODULES = $(addprefix std/, \
   $(addprefix experimental/allocator/, affix_allocator allocator_list common \
 	bucketizer fallback_allocator free_list gc_allocator \
-	heap_block mallocator mmap_allocator null_allocator porcelain region \
-	segregator stats_collector) \
+	heap_block kernighan_ritchie mallocator mmap_allocator null_allocator \
+	porcelain region segregator stats_collector) \
   array ascii base64 bigint bitmanip compiler complex concurrency \
   $(addprefix container/, array binaryheap dlist rbtree slist util) \
   conv cstream csv datetime demangle \
