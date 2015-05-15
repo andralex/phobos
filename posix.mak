@@ -194,10 +194,10 @@ STD_PACKAGES = $(addprefix std/, algorithm container experimental/allocator \
 
 # Modules in std (including those in packages), in alphabetical order.
 STD_MODULES = $(addprefix std/, \
-  $(addprefix experimental/allocator/, affix_allocator allocator_list \
-	auto_deallocator common bucketizer fallback_allocator free_list free_tree \
-	gc_allocator heap_block kernighan_ritchie mallocator mmap_allocator \
-	null_allocator porcelain quantizer region segregator stats_collector) \
+  $(addprefix experimental/allocator/, affix_allocator allocator_list common \
+	bucketizer fallback_allocator free_list free_tree gc_allocator heap_block \
+	kernighan_ritchie mallocator mmap_allocator null_allocator porcelain \
+	quantizer region scoped_allocator segregator stats_collector) \
   array ascii base64 bigint bitmanip compiler complex concurrency \
   $(addprefix container/, array binaryheap dlist rbtree slist util) \
   conv cstream csv datetime demangle \
