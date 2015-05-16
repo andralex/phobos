@@ -1,4 +1,5 @@
 module std.experimental.allocator.mallocator;
+import std.conv : to;
 import std.experimental.allocator.common;
 
 /**
