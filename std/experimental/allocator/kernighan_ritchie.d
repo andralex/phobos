@@ -611,7 +611,7 @@ It should perform slightly better because instead of searching through one
 large free list, it searches through several shorter lists in LRU order. Also,
 it actually returns memory to the operating system when possible.
 */
-unittest
+version(Posix) unittest
 {
     import std.algorithm : max;
     import std.experimental.allocator.gc_allocator,
@@ -651,7 +651,7 @@ unittest
     }
 }
 
-unittest
+version(Posix) unittest
 {
     import std.algorithm : max;
     import std.experimental.allocator.gc_allocator,
