@@ -145,11 +145,35 @@ SRC_STD_LOGGER= std\experimental\logger\core.d std\experimental\logger\filelogge
 	std\experimental\logger\multilogger.d std\experimental\logger\nulllogger.d \
 	std\experimental\logger\package.d
 
+SRC_STD_ALLOCATOR= \
+        std\experimental\allocator\affix_allocator.d \
+        std\experimental\allocator\allocator_list.d \
+        std\experimental\allocator\bitmapped_block.d \
+        std\experimental\allocator\bucketizer.d \
+        std\experimental\allocator\building_blocks.d \
+        std\experimental\allocator\common.d \
+        std\experimental\allocator\fallback_allocator.d \
+        std\experimental\allocator\free_list.d \
+        std\experimental\allocator\free_tree.d \
+        std\experimental\allocator\gc_allocator.d \
+        std\experimental\allocator\kernighan_ritchie.d \
+        std\experimental\allocator\mallocator.d \
+        std\experimental\allocator\mmap_allocator.d \
+        std\experimental\allocator\null_allocator.d \
+        std\experimental\allocator\package.d \
+        std\experimental\allocator\quantizer.d \
+        std\experimental\allocator\region.d \
+        std\experimental\allocator\scoped_allocator.d \
+        std\experimental\allocator\segregator.d \
+        std\experimental\allocator\showcase.d \
+        std\experimental\allocator\stats_collector.d \
+        std\experimental\allocator\typed.d
+
 SRC_STD_6= std\variant.d \
 	std\syserror.d std\zlib.d \
 	std\stream.d std\socket.d std\socketstream.d \
 	std\conv.d std\zip.d std\cstream.d \
-	$(SRC_STD_CONTAINER) $(SRC_STD_LOGGER)
+	$(SRC_STD_CONTAINER) $(SRC_STD_LOGGER) $(SRC_STD_ALLOCATOR)
 
 SRC_STD_REST= std\stdint.d \
 	std\json.d \
@@ -903,7 +927,7 @@ zip : win32.mak win64.mak posix.mak osmodel.mak $(STDDOC) $(SRC) \
 	$(SRC_ETC) $(SRC_ETC_C) $(SRC_ZLIB) $(SRC_STD_NET) $(SRC_STD_DIGEST) $(SRC_STD_CONTAINER) \
 	$(SRC_STD_INTERNAL) $(SRC_STD_INTERNAL_DIGEST) $(SRC_STD_INTERNAL_MATH) \
 	$(SRC_STD_INTERNAL_WINDOWS) $(SRC_STD_REGEX) $(SRC_STD_RANGE) $(SRC_STD_ALGO) \
-	$(SRC_STD_LOGGER)
+	$(SRC_STD_LOGGER) $(SRC_STD_ALLOCATOR)
 	del phobos.zip
 	zip32 -u phobos win32.mak win64.mak posix.mak osmodel.mak $(STDDOC)
 	zip32 -u phobos $(SRC)
@@ -922,6 +946,7 @@ zip : win32.mak win64.mak posix.mak osmodel.mak $(STDDOC) $(SRC) \
 	zip32 -u phobos $(SRC_ZLIB)
 	zip32 -u phobos $(SRC_STD_NET)
 	zip32 -u phobos $(SRC_STD_LOGGER)
+	zip32 -u phobos $(SRC_STD_ALLOCATOR)
 	zip32 -u phobos $(SRC_STD_DIGEST)
 	zip32 -u phobos $(SRC_STD_CONTAINER)
 	zip32 -u phobos $(SRC_STD_REGEX)
