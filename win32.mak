@@ -165,8 +165,7 @@ SRC_STD_ALLOCATOR= \
         std\experimental\allocator\region.d \
         std\experimental\allocator\scoped_allocator.d \
         std\experimental\allocator\segregator.d \
-        std\experimental\allocator\stats_collector.d \
-        std\experimental\allocator\typed.d \
+        std\experimental\allocator\stats_collector.d
 
 SRC_STD_6= std\variant.d \
 	std\syserror.d std\zlib.d \
