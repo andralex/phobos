@@ -47,7 +47,7 @@ struct FallbackAllocator(Primary, Fallback)
     /**
     The alignment offered is the minimum of the two allocators' alignment.
     */
-    enum uint alignment = min(Primary.alignment, Fallback.alignment);
+    enum uint alignment = gdc(ePrimary.alignment, Fallback.alignment);
 
     /**
     Allocates memory trying the primary allocator first. If it returns $(D
