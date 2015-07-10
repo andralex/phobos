@@ -29,10 +29,6 @@ struct MmapAllocator
         {
             import core.sys.posix.sys.mman;
             if (!bytes) return null;
-            version(OSX) import core.sys.osx.sys.mman : MAP_ANON;
-            else version(linux) import core.sys.linux.sys.mman : MAP_ANON;
-            else version(FreeBSD) import core.sys.freebsd.sys.mman : MAP_ANON;
-            else static assert(false, "Add import for MAP_ANON here.");
             auto p = mmap(null, bytes, PROT_READ | PROT_WRITE,
                 MAP_PRIVATE | MAP_ANON, -1, 0);
             if (p is MAP_FAILED) return null;
@@ -50,47 +46,21 @@ struct MmapAllocator
     else version(Windows)
     {
         import core.sys.windows.windows;
-
-        // kept to close the mapped memory.
-        private static shared(HANDLE) f;
-
+        
         /// Allocator API.
         void[] allocate(size_t bytes) shared
         {
             if (!bytes) return null;
-
-            uint hiSz, loSz;
-            static if (bytes.sizeof == 8)
-            {
-                loSz = LOWORD(bytes);
-                hiSz = HIWORD(bytes);
-            }
-            else loSz = bytes;
-
-            auto fh = CreateFileMappingA(INVALID_HANDLE_VALUE,
-                LPSECURITY_ATTRIBUTES.init, PAGE_READWRITE, hiSz, loSz, null);
-            if (fh == INVALID_HANDLE_VALUE) return null;
-
-            auto p = MapViewOfFile(fh, FILE_MAP_ALL_ACCESS, 0u, 0u, bytes);
+            auto p = VirtualAlloc(null, bytes, MEM_COMMIT, PAGE_READWRITE);
             if (p == null)
-            {
-                CloseHandle(fh);
                 return null;
-            }
-
-            f = cast(typeof(f)) fh;
             return p[0 .. bytes];
         }
 
         /// Ditto
         bool deallocate(void[] b) shared
         {
-            int result = true;
-            if (b.ptr)
-                result &= UnmapViewOfFile(b.ptr);
-            if (f != INVALID_HANDLE_VALUE)
-                result &= CloseHandle(cast(HANDLE) f);
-            return result != 0;
+            return b.ptr is null || VirtualFree(b.ptr, 0, MEM_RELEASE) != 0;
         }
     }
 }
