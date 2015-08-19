@@ -99,9 +99,86 @@ unittest
 version (Posix) private extern(C) int posix_memalign(void**, size_t, size_t);
 version (Windows)
 {
-    private extern(C) void* _aligned_malloc(size_t, size_t);
-    private extern(C) void _aligned_free(void *memblock);
-    private extern(C) void* _aligned_realloc(void *, size_t, size_t);
+    // DMD Win 32 bit, DigitalMars C standard library misses the _aligned_xxx
+    // functions family (snn.lib)
+    version(CRuntime_DigitalMars)
+    {
+        // Helper to cast the infos written before the aligned pointer
+        // this header keeps track of the size (required to realloc) and of 
+        // the base ptr (required to free).
+        private struct AlignInfo
+        {   
+            void* basePtr; 
+            size_t size;
+            static AlignInfo* opCall(void* ptr)
+            {
+                return cast(AlignInfo*) (ptr - AlignInfo.sizeof);
+            } 
+        }
+        
+        private void* _aligned_malloc(size_t size, size_t alignment)
+        {
+            import std.c.stdlib: malloc;
+            size_t offset = alignment + size_t.sizeof * 2 - 1;
+            
+            // unaligned chunk
+            void* basePtr = malloc(size + offset);
+            if (!basePtr) return null;
+            
+            // get aligned location within the chunk
+            void* alignedPtr = cast(void**)((cast(size_t)(basePtr) + offset) 
+                & ~(alignment - 1));
+            
+            // write the header before the aligned pointer
+            AlignInfo* head = AlignInfo(alignedPtr);
+            head.basePtr = basePtr;
+            head.size = size;
+              
+            return alignedPtr;      
+        }
+        
+        private void* _aligned_realloc(void* ptr, size_t size, size_t alignment)
+        {
+            import std.c.stdlib: free;
+            import std.c.string: memcpy;
+            
+            if(!ptr) return _aligned_malloc(size, alignment);
+            
+            // gets the header from the exising pointer
+            AlignInfo* head = AlignInfo(ptr);
+            
+            // gets a new aligned pointer
+            void* alignedPtr = _aligned_malloc(size, alignment);
+            if (!alignedPtr) 
+            {
+                //to https://msdn.microsoft.com/en-us/library/ms235462.aspx
+                //see Return value: in this case the original block is unchanged
+                return null;
+            }
+            
+            // copy exising data
+            memcpy(alignedPtr, ptr, head.size);
+            free(head.basePtr);
+            
+            return alignedPtr;        
+        }
+        
+        private void _aligned_free(void *ptr)
+        {
+            import std.c.stdlib: free;
+            if (!ptr) return;
+            AlignInfo* head = AlignInfo(ptr);
+            free(head.basePtr);
+        }
+   
+    }
+    // DMD Win 64 bit, uses microsoft standard C library which implements them
+    else
+    {
+        private extern(C) void* _aligned_malloc(size_t, size_t);
+        private extern(C) void _aligned_free(void *memblock);
+        private extern(C) void* _aligned_realloc(void *, size_t, size_t);
+    }
 }
 
 /**
@@ -223,4 +300,50 @@ unittest
         128);
     scope(exit) AlignedMallocator.instance.deallocate(buffer);
     //...
+}
+
+version(unittest) version(CRuntime_DigitalMars) 
+    size_t addr(ref void* ptr){return cast(size_t) ptr;}
+version(CRuntime_DigitalMars) unittest
+{
+    void* m;
+        
+    m = _aligned_malloc(16, 0x10);
+    if (m)
+    {
+        assert((m.addr & 0xF) == 0);
+        _aligned_free(m);
+    }
+    
+    m = _aligned_malloc(16, 0x100);
+    if (m)
+    {
+        assert((m.addr & 0xFF) == 0);
+        _aligned_free(m);
+    }
+
+    m = _aligned_malloc(16, 0x1000);
+    if (m)
+    {
+        assert((m.addr & 0xFFF) == 0);  
+        _aligned_free(m);
+    }
+    
+    m = _aligned_malloc(16, 0x10);
+    if (m)
+    {
+        assert((cast(size_t)m & 0xF) == 0);
+        m = _aligned_realloc(m, 32, 0x10000);
+        if (m) assert((m.addr & 0xFFFF) == 0);
+        _aligned_free(m);
+    }
+    
+    m = _aligned_malloc(8, 0x10);
+    if (m)
+    {
+        *cast(ulong*) m = 0X01234567_89ABCDEF;
+        m = _aligned_realloc(m, 0x800, 0x1000);
+        if (m) assert(*cast(ulong*) m == 0X01234567_89ABCDEF); 
+        _aligned_free(m);
+    }     
 }
