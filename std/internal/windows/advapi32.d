@@ -16,17 +16,21 @@ private import core.sys.windows.windows;
 
 pragma(lib, "advapi32.lib");
 
-immutable bool isWow64;
-
-shared static this()
+@property immutable bool isWow64()
 {
-    // WOW64 is the x86 emulator that allows 32-bit Windows-based applications to run seamlessly on 64-bit Windows
-    // IsWow64Process Function - Minimum supported client - Windows Vista, Windows XP with SP2
-    alias fptr_t = extern(Windows) BOOL function(HANDLE, PBOOL);
-    auto hKernel = GetModuleHandleA("kernel32");
-    auto IsWow64Process = cast(fptr_t) GetProcAddress(hKernel, "IsWow64Process");
-    BOOL bIsWow64;
-    isWow64 = IsWow64Process && IsWow64Process(GetCurrentProcess(), &bIsWow64) && bIsWow64;
+    static shared bool result;
+    return initOnce!result(
+        {
+            // WOW64 is the x86 emulator that allows 32-bit Windows-based applications to run seamlessly on 64-bit Windows
+            // IsWow64Process Function - Minimum supported client - Windows Vista, Windows XP with SP2
+            alias fptr_t = extern(Windows) BOOL function(HANDLE, PBOOL);
+            auto hKernel = GetModuleHandleA("kernel32");
+            auto IsWow64Process = cast(fptr_t) GetProcAddress(hKernel, "IsWow64Process");
+            BOOL bIsWow64;
+            return IsWow64Process
+                && IsWow64Process(GetCurrentProcess(), &bIsWow64) && bIsWow64;
+        }()
+    );
 }
 
 HMODULE hAdvapi32 = null;
