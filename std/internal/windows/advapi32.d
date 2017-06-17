@@ -16,9 +16,10 @@ private import core.sys.windows.windows;
 
 pragma(lib, "advapi32.lib");
 
-@property immutable bool isWow64()
+@property bool isWow64()
 {
     static shared bool result;
+    import std.concurrency : initOnce;
     return initOnce!result(
         {
             // WOW64 is the x86 emulator that allows 32-bit Windows-based applications to run seamlessly on 64-bit Windows
