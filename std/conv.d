@@ -5786,12 +5786,12 @@ if (isIntegral!T && isOutputRange!(W, char))
     if (value < 0)
     {
         SignedStringBuf buf = void;
-        put(writer, signedToTempString(value, buf, 10));
+        put(writer, signedToTempString(value, buf));
     }
     else
     {
         UnsignedStringBuf buf = void;
-        put(writer, unsignedToTempString(value, buf, 10));
+        put(writer, unsignedToTempString(value, buf));
     }
 }
 
